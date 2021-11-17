@@ -12,6 +12,9 @@ from .metrics import *
 from .dataloader import BiONetDataset
 from .model import BiONet
 
+from tensorboardX import SummaryWriter
+
+writer = SummaryWriter('logs')
 
 device = torch.device('cuda:0')
 
@@ -92,7 +95,9 @@ def train(args):
               'loss:', tot_loss/args.steps,
               'iou:', tot_iou/args.steps,
               'dice:', tot_dice/args.steps)
-
+        writer.add_scalar("train/loss",tot_loss/args.steps,epoch)
+        writer.add_scalar("train/iou",tot_iou/args.steps,epoch)
+        writer.add_scalar("train/dice",tot_dice/args.steps,epoch)
         # validation
         model.eval()
         with torch.no_grad():
@@ -122,8 +127,12 @@ def train(args):
               'val_iou:', val_iou/len(test_loader),
               'val_dice:', val_dice/len(test_loader),
               'best val_iou:', best_iou)
-
+        writer.add_scalar("val/loss", tot_loss / args.steps,epoch)
+        writer.add_scalar("val/iou", tot_iou / args.steps,epoch)
+        writer.add_scalar("val/dice", tot_dice / args.steps,epoch)
     print('\nTraining fininshed!')
+
+writer.close()
 
 def evaluate(args):
     # load data and create data loader
